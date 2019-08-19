@@ -28,7 +28,7 @@ fn parse(file: &str) -> Result<Vec<u8>, io::Error> {
 
 fn stripe<T: Copy>(v: Vec<T>, n: usize) -> Vec<T> {
     let mut result: Vec<T> = Vec::with_capacity((v.len() / n) + 1 as usize);
-    let idx: Vec<usize> = (1..v.len()).filter(|i| i % n == 0).collect();
+    let idx: Vec<usize> = (0..v.len()).filter(|i| i % n == 0).collect();
 
     for i in idx {
         result.push(v[i]);
