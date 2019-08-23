@@ -96,19 +96,17 @@ fn guess_keylen(ciphertext: Vec<u8>) {
 /// Try to guess viable key components for decoding ciphertext
 fn crack(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap<u8, f32> {
     let mut map = HashMap::new();
-    let guess_range = 0x20..0x7E+1;
+    let guess_range = 0x0..0xFF; // turns out the key can be any arbitrary bytes
 
     let c = stripe(ciphertext, keylen, offset);
 
-    println!("ciphertext: {:x?}", c);
     for g in guess_range {
         let p: Vec<u8> = c.clone().into_iter().map(|x| x ^ g).collect();
 
-        println!("[0x{:x}], xord: {:x?}", g, p);
         let e_cnt = p.iter().filter(|&&x| x == 0x65).count() as f32;
-        let e = (e_cnt / c.len() as f32).powf(2.0);
+        let e = e_cnt / c.len() as f32; //.powf(2.0);
 
-        if 0.045 < e && e < 0.085 {
+        if 0.06 < e && e < 0.12 {
             map.insert(g, e);
         }
     }
@@ -121,10 +119,11 @@ fn usage(cmd: Option<&str>) {
         Some("key") => println!("Usage: vigenere key [ciphertext file]"),
         Some("crack") => eprintln!("Usage: vigenere crack [keylen] [ciphertext file]"),
         _ => {
-            println!("Usage: vigenere [command] [options]");
+            println!("Usage: vigenere [command] [options...]");
             println!("");
             println!("Supported commands:");
             println!("\tkey\t\tbrute-force guess Vigenere cipher key length");
+            println!("\tcrack\t\tgiven a key length, derive most likely keys");
         },
     }
 }
@@ -159,8 +158,10 @@ fn main() {
             match parse(file) {
                 Ok(data) => {
                     // For now for testing we only try cracking 1st char
-                    let r = crack(&data, keylen, 0);
-                    println!("[{}] ==> {:?}", keylen, r);
+                    for i in 0..keylen {
+                        let r = crack(&data, keylen, i);
+                        println!("[{}] ==> {:x?}", i, r);
+                    }
                 },
                 Err(e) => println!("ParseError: {}", e),
             }
