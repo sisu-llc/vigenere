@@ -12,6 +12,7 @@ fn vigenere(text: &[u8], key: &[u8]) -> Vec<u8> {
     result
 }
 
+#[allow(dead_code)]
 pub fn encrypt(plaintext: &[u8], key: &[u8]) -> Vec<u8> {
     vigenere(plaintext, key)
 }

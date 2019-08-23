@@ -122,8 +122,6 @@ fn guess_key_part(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap
 }
 
 fn bruteforce(ciphertext: &Vec<u8>, keyspace: &Vec<Vec<u8>>) {
-    println!("bruttttte force!\n\n{:?}", keyspace);
-
     let dimensions: Vec<usize> = keyspace.iter()
         .map(|v| v.len())
         .collect();
