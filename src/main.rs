@@ -1,9 +1,14 @@
 // vigenere cipher breaking fun for Coursera Cryptography class
+extern crate rand;
+use rand::distributions::{Distribution, Uniform};
+
 use std::env;
 use std::fs;
 use std::collections::HashMap;
 
 mod crypto;
+use crypto::decrypt;
+
 mod errors;
 use errors::ParseError;
 
@@ -86,15 +91,15 @@ fn guess_keylen(ciphertext: Vec<u8>) {
         let num_keys = f.keys().len();
         let sum: f32 = f.values().fold(0_f32, |acc, v| acc + (v * v));
 
-        if sum > 0.035 {
-            println!("{:?}: {:?} w/ {}", i, sum, num_keys);
+        if sum > 0.035 { // i.e. looks to be non-uniform distribution
+            println!("{:?}: {:?} w/ {} unique vals", i, sum, num_keys);
         }
     }
 }
 
 
 /// Try to guess viable key components for decoding ciphertext
-fn crack(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap<u8, f32> {
+fn guess_key_part(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap<u8, f32> {
     let mut map = HashMap::new();
     let guess_range = 0x0..0xFF; // turns out the key can be any arbitrary bytes
 
@@ -106,12 +111,44 @@ fn crack(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap<u8, f32>
         let e_cnt = p.iter().filter(|&&x| x == 0x65).count() as f32;
         let e = e_cnt / c.len() as f32; //.powf(2.0);
 
-        if 0.06 < e && e < 0.12 {
+        // assumption right now is based on my manual analysis of Moby Dick,
+        // we should expect lowercase 'e' to appear about 9% of the time.
+        if 0.07 < e && e < 0.12 {
             map.insert(g, e);
         }
     }
 
     map
+}
+
+fn bruteforce(ciphertext: &Vec<u8>, keyspace: &Vec<Vec<u8>>) {
+    println!("bruttttte force!\n\n{:?}", keyspace);
+
+    let dimensions: Vec<usize> = keyspace.iter()
+        .map(|v| v.len())
+        .collect();
+    let max: usize = dimensions.iter().fold(1, |acc, x| acc * x);
+
+    // ok, for now let's try some random search of the space
+    // we'll cap iterations at max just to be safe and lazy
+    let mut rng = rand::thread_rng();
+    let mut dice = vec![];
+    dimensions.iter().for_each(|&d| dice.push(Uniform::from(0..d)));
+
+    // hold onto your butts
+    for i in 0..max {
+        let mut key: Vec<u8> = Vec::with_capacity(keyspace.len());
+
+        for j in 0..keyspace.len() {
+            let roll = dice[j].sample(&mut rng);
+            key.push(keyspace[j][roll]);
+        }
+
+        println!("[{}] {:?}", i, key);
+
+        let candidate = decrypt(ciphertext, &key);
+        println!("{:?}", candidate);
+    }
 }
 
 fn usage(cmd: Option<&str>) {
@@ -157,16 +194,32 @@ fn main() {
 
             match parse(file) {
                 Ok(data) => {
+                    let mut probables = vec![];
+
                     // For now for testing we only try cracking 1st char
                     for i in 0..keylen {
-                        let r = crack(&data, keylen, i);
-                        println!("[{}] ==> {:x?}", i, r);
+                        let r = guess_key_part(&data, keylen, i);
+                        println!("key[{}] ==> {:x?}", i, r);
+
+                        if r.len() == 0 {
+                            eprintln!("failed to find a viable key byte, aborting :-(");
+                            return;
+                        }
+
+                        // so is there anyway to clone key values from a hashmap??? ugh
+                        let mut guesses = vec![];
+                        for (k, _) in r {
+                            guesses.push(k);
+                        }
+                        probables.push(guesses);
                     }
+
+                    bruteforce(&data, &probables);
                 },
                 Err(e) => println!("ParseError: {}", e),
             }
         },
-        _ => eprintln!("unknown command"),
+        _ => usage(None),
     }
 }
 

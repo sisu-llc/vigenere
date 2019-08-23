@@ -1,9 +1,23 @@
-pub fn encrypt(_plaintext: &[u8], _key: &[u8]) -> Vec<u8> {
-    panic!("not implemented");
+fn vigenere(text: &[u8], key: &[u8]) -> Vec<u8> {
+    let len = text.len();
+    let keylen = key.len();
+
+    let mut result = Vec::with_capacity(len);
+
+    for i in 0..len {
+        let p = text[i] ^ key[i % keylen];
+        result.push(p);
+    }
+
+    result
 }
 
-pub fn decrypt(_ciphertext: &[u8], _key: &[u8]) -> Vec<u8> {
-    panic!("not implemented");
+pub fn encrypt(plaintext: &[u8], key: &[u8]) -> Vec<u8> {
+    vigenere(plaintext, key)
+}
+
+pub fn decrypt(ciphertext: &[u8], key: &[u8]) -> Vec<u8> {
+    vigenere(ciphertext, key)
 }
 
 #[cfg(test)]
