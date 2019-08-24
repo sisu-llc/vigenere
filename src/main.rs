@@ -109,11 +109,11 @@ fn guess_key_part(ciphertext: &Vec<u8>, keylen: usize, offset: usize) -> HashMap
         let p: Vec<u8> = c.clone().into_iter().map(|x| x ^ g).collect();
 
         let e_cnt = p.iter().filter(|&&x| x == 0x65).count() as f32;
-        let e = e_cnt / c.len() as f32; //.powf(2.0);
+        let e = e_cnt / c.len() as f32;
 
         // assumption right now is based on my manual analysis of Moby Dick,
         // we should expect lowercase 'e' to appear about 9% of the time.
-        if 0.07 < e && e < 0.12 {
+        if e > 0.05 {
             map.insert(g, e);
         }
     }
@@ -133,7 +133,7 @@ fn bruteforce(ciphertext: &Vec<u8>, keyspace: &Vec<Vec<u8>>) {
     let mut dice = vec![];
     dimensions.iter().for_each(|&d| dice.push(Uniform::from(0..d)));
 
-    // hold onto your butts
+    println!("Hold onto your butts...going to try {}k iterations...", max / 1_000);
     for i in 0..max {
         let mut key: Vec<u8> = Vec::with_capacity(keyspace.len());
 
@@ -142,10 +142,17 @@ fn bruteforce(ciphertext: &Vec<u8>, keyspace: &Vec<Vec<u8>>) {
             key.push(keyspace[j][roll]);
         }
 
-        println!("[{}] {:?}", i, key);
-
+//        println!("{:x?}", key);
         let candidate = decrypt(ciphertext, &key);
-        println!("{:?}", candidate);
+        if candidate.is_ok() {
+            let plaintext = candidate.unwrap();
+            //println!("key[{:x?}] ==> {}", key, String::from_utf8(plaintext).unwrap());
+
+            let s = String::from_utf8(plaintext).unwrap();
+            if s.contains(" the ") && s.contains(" and ") {
+                println!("key[{:x?}] ==> {}", key, s);
+            }
+        }
     }
 }
 
