@@ -13,7 +13,7 @@ mod errors;
 use errors::ParseError;
 
 // Load and parse a text file containing printed hex of a payload.
-// That is: "FFA0" -> [255, 10]
+// That is: "FF0A" -> [255, 10]
 fn parse(file: &str) -> Result<Vec<u8>, ParseError> {
     let s = fs::read_to_string(file)?;
     let bytes = s.as_bytes();
