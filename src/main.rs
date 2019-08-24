@@ -134,7 +134,7 @@ fn bruteforce(ciphertext: &Vec<u8>, keyspace: &Vec<Vec<u8>>) {
     dimensions.iter().for_each(|&d| dice.push(Uniform::from(0..d)));
 
     println!("Hold onto your butts...going to try {}k iterations...", max / 1_000);
-    for i in 0..max {
+    for _ in 0..max {
         let mut key: Vec<u8> = Vec::with_capacity(keyspace.len());
 
         for j in 0..keyspace.len() {
