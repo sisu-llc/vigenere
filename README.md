@@ -2,7 +2,7 @@
 
 This is one of the exercises from the [Coursera Cryptography](https://www.coursera.org/learn/cryptography/) course from the University of Maryland, College Park with instructor Jonathan Katz.
 
-General premise of the project ann example of applying heuristic approaches to cracking a usage of the Vigenere cipher in two parts:
+General premise of the project is an example of applying heuristic approaches to cracking a usage of the Vigenere cipher in two parts:
 
 1. Guessing the keylength
 2. Using heuristics to quickly brute force viable keys of a given keylength
