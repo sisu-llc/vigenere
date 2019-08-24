@@ -35,7 +35,7 @@ I took some liberties in how the problem is approached, mainly:
 
 1. Keys are of some finite size, mainly only up to _32 bytes_ in length.
 
-2. The frequency of the english lowercase `e` is assumed to be ~0.9 based on a manual analysis of [Moby Dick](./input/moby_dick.txt). (This was done in Python's REPL and I don't offer any code for this claim at the moment.)
+2. The frequency of the english lowercase `e` is assumed to be ~0.09 based on a manual analysis of [Moby Dick](./input/moby_dick.txt). (This was done in Python's REPL and I don't offer any code for this claim at the moment.)
 
 3. A random search of the probable keyspace is used. (Hence using the rand crate's uniform distributions to basically "roll dice" to pick candidate byte values.)
 
